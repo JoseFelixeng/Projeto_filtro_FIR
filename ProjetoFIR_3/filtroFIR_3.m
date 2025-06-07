@@ -1,7 +1,6 @@
 % Coeficientes
-Fc= 14000;      % Frequência de amostragem
+F= 14000;      % Frequência de amostragem
 dur = 5;         % Duração da gravação (s)
-F = 44100
 d_s = 0.0316; % Delta de frequência de transição no domínio do sinal
 d_w = 0.04*pi; % Largura de transição no domínio de frequência
 d_f = d_w/(2*pi); % Delta de frequência normalizada
@@ -21,7 +20,7 @@ vt = getaudiodata(voz);   % Sinal de voz (v[n])
 audiowrite('voz_original.wav', vt, F);  % Salva voz original
 soundsc(vt, F);   % Reproduz a voz original com ajuste automático de volume
 
-t = (0:length(vt)-1)/Fc;  % Vetor de tempo
+t = (0:length(vt)-1)/F;  % Vetor de tempo
 
 % gerando o ruído
 rt = a1*cos(2*pi*f1*t') + a2*cos(2*pi*f2*t');  % Ruído senoidal
@@ -32,10 +31,10 @@ soundsc(zt, F);  % Reproduz sinal
 
 % === Parte 3: Projeto do filtro FIR rejeita-faixa ===
 M = 156;  % Ordem do filtro (número de coeficientes - 1)
-w1 = 2*pi*f1/Fc;  % Frequência angular inferior
-w2 = 2*pi*f2/Fc;  % Frequência angular superior
+w1 = 2*pi*f1/F;  % Frequência angular inferior
+w2 = 2*pi*f2/F;  % Frequência angular superior
 fc = (f1+ f2)/2;
-wc = 2 * pi * fc/ Fc;
+wc = 2 * pi * fc/ F;
 
 n = 0:M;               % Vetor de índices
 N = n - M/2;           % Centralizado em zero
@@ -43,7 +42,7 @@ N = n - M/2;           % Centralizado em zero
 % Resposta ideal do filtro rejeita-faixa
 %hd = sin(wc*(pi*N)) ./ (pi*N);
 hd = 1 - ((sin(w2*N) - sin(w1*N)) ./ (pi*N));
-hd(n == M/2) = wc/pi;  % Corrige divisão por zero no centro
+hd(n == M/2) = 1 - (w2 - w1)/pi;  % Corrige divisão por zero no centro
 
 % Janela de Hanning
 wHann = (0.5 - 0.5*cos(2*pi*n/M));
@@ -86,7 +85,7 @@ xlabel('n'); ylabel('Amplitude');
 % --- Resposta em frequência (freqz) ---
 [Hf, wf] = freqz(hc, 1, 1024, F);
 figure;
-subplot(2,1,1); plot(wf, abs(Hf)); title('Magnitude da Resposta em Freq.'); xlabel('Frequência (Hz)'); ylabel('|H(f)|');
+subplot(2,1,1); plot(wf, 20*log10(abs(Hf))); title('Magnitude da Resposta em Freq.'); xlabel('Frequência (Hz)'); ylabel('|H(f)|');
 subplot(2,1,2); plot(wf, unwrap(angle(Hf))); title('Fase da Resposta em Freq.'); xlabel('Frequência (Hz)'); ylabel('Fase (rad)');
 
 
