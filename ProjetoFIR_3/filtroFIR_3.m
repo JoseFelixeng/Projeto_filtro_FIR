@@ -1,5 +1,5 @@
 % Coeficientes
-F= 14000;      % Frequência de amostragem
+F= 44100;      % Frequência de amostragem
 dur = 5;         % Duração da gravação (s)
 d_s = 0.0316; % Delta de frequência de transição no domínio do sinal
 d_w = 0.04*pi; % Largura de transição no domínio de frequência
@@ -26,6 +26,8 @@ t = (0:length(vt)-1)/F;  % Vetor de tempo
 rt = a1*cos(2*pi*f1*t') + a2*cos(2*pi*f2*t');  % Ruído senoidal
 zt = vt + rt;  % Sinal corrompido
 
+audiowrite('voz_c_ruido.wav', zt, F);
+
 soundsc(zt, F);  % Reproduz sinal
 
 
@@ -33,16 +35,17 @@ soundsc(zt, F);  % Reproduz sinal
 M = 156;  % Ordem do filtro (número de coeficientes - 1)
 w1 = 2*pi*f1/F;  % Frequência angular inferior
 w2 = 2*pi*f2/F;  % Frequência angular superior
-fc = (f1+ f2)/2;
+fc = (f1+f2)/2;
 wc = 2 * pi * fc/ F;
 
 n = 0:M;               % Vetor de índices
 N = n - M/2;           % Centralizado em zero
+N(N==0) = eps;   %corrigi divisão por zero
 
 % Resposta ideal do filtro rejeita-faixa
 %hd = sin(wc*(pi*N)) ./ (pi*N);
 hd = 1 - ((sin(w2*N) - sin(w1*N)) ./ (pi*N));
-hd(n == M/2) = 1 - (w2 - w1)/pi;  % Corrige divisão por zero no centro
+hd(M/2+1) = 1 - (w2 - w1)/pi;  % Corrige divisão por zero no centro
 
 % Janela de Hanning
 wHann = (0.5 - 0.5*cos(2*pi*n/M));
@@ -66,9 +69,9 @@ subplot(3,1,2); plot(t, zt); title('Sinal Corrompido z[n]'); xlabel('Tempo (s)')
 subplot(3,1,3); plot(t, yt); title('Sinal Filtrado y[n]'); xlabel('Tempo (s)'); ylabel('Amplitude');
 
 % --- Frequência ---
-V = abs(fftshift(fft(vt)));
-Z = abs(fftshift(fft(zt)));
-Y = abs(fftshift(fft(yt)));
+V = 20*log10(abs(fftshift(fft(vt))));
+Z = 20*log10(abs(fftshift(fft(zt))));
+Y = 20*log10(abs(fftshift(fft(yt))));
 f = linspace(-F/2, F/2, length(vt));
 
 figure;
