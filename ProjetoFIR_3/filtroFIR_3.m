@@ -4,7 +4,7 @@ dur = 5;         % Duração da gravação (s)
 Fv = 44100
 d_s = 0.0316; % Delta de frequência de transição no domínio do sinal
 d_w = 0.04*pi; % Largura de transição no domínio de frequência
-d_f = delta_w/(2*pi); % Delta de frequência normalizada
+d_f = d_w/(2*pi); % Delta de frequência normalizada
 voz = audiorecorder(Fv, 16, 1);  % Mono, 16 bits
 
 disp('Gravando... Fale agora.');
@@ -30,10 +30,10 @@ soundsc(zt, Fv);  % Reproduz sinal
 
 % === Parte 3: Projeto do filtro FIR rejeita-faixa ===
 M = 156;  % Ordem do filtro (número de coeficientes - 1)
-w1 = 2*pi*f1/Fs;  % Frequência angular inferior
-w2 = 2*pi*f2/Fs;  % Frequência angular superior
-fc = (5400 + 5700)/2;   % = 5550 Hz
-wc = 2 * pi * 5550 / 12000;  % ≈ 2.907 rad (ou 0.925π rad)
+w1 = 2*pi*f1/Fc;  % Frequência angular inferior
+w2 = 2*pi*f2/Fc;  % Frequência angular superior
+fc = (f1+ f2)/2;
+wc = 2 * pi * fc/ Fc;
 
 n = 0:M;               % Vetor de índices
 N = n - M/2;           % Centralizado em zero
@@ -50,7 +50,7 @@ wHann = (0.5 - 0.5*cos(2*pi*n/M));
 hc = hd .* wHann;
 
 % === Parte 4: Aplicação do filtro ===
-yt = filter(h, 1, zt);  % Sinal filtrado
+yt = filter(hc, 1, zt);  % Sinal filtrado
 
 soundsc(yt, Fv);  % Reproduz o sinal filtrado
 
